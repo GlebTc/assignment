@@ -35,7 +35,7 @@ export default function DisplayModeToggle({ onToggle }: { onToggle: (isDark: boo
   return (
     <button
       onClick={toggleDarkMode}
-      className="p-2 px-4 bg-gray-300 dark:bg-gray-700 rounded-full shadow-md focus:outline-none"
+      className="p-3 bg-gray-300 dark:bg-gray-700 rounded-full shadow-md focus:outline-none"
       aria-label="Toggle dark mode"
     >
       {darkMode ? '☀️' : '🌙'}
