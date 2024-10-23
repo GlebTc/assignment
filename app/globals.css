@@ -1,0 +1,25 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* Light mode variables */
+:root {
+  --background: #ffffff;
+  --foreground: #171717;
+  --text-color: #333333; /* Slightly darker text color for readability in light mode */
+}
+
+/* Dark mode variables applied when the 'dark' class is present */
+.dark {
+  --background: #0a0a0a;
+  --foreground: #ededed;
+  --text-color: #d1d5db; /* Slightly lighter text color for readability in dark mode */
+}
+
+/* Apply text color and background dynamically */
+body {
+  color: var(--text-color); /* Dynamic text color for readability */
+  background: var(--background); /* Dynamic background color */
+  font-family: Arial, Helvetica, sans-serif;
+  transition: background 0.3s ease, color 0.3s ease; /* Smooth transitions between modes */
+}
