@@ -3,16 +3,42 @@ import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import BarChart from '@/components/BarChart';
 import TargetTable from '@/components/TargetTable';
-import targets from '@/data/targets.json';
 import { Target } from '@/lib/types';
 import DisplayModeToggle from '@/components/DisplayModeToggle';
+import Loading from '@/components/Loading';
 
 export default function Dashboard() {
   const [filterStatus, setFilterStatus] = useState<string | null>(null);
   const [isDarkMode, setIsDarkMode] = useState<boolean>(false);
+  const [targets, setTargets] = useState<Target[]>([]); // Dynamic data state
+  const [loading, setLoading] = useState<boolean>(true); // Loading state
+  const [pipelineStatuses, setPipelineStatuses] = useState<string[]>([]); 
 
-  // Sync dark mode toggle state
+  // Fetch data from the API with an artificial delay
   useEffect(() => {
+    async function fetchTargets() {
+      try {
+        // Introduce an artificial delay of 1 second
+        await new Promise((resolve) => setTimeout(resolve, 1000));
+  
+        const res = await fetch('/api/targets'); // Make sure your API route is set up as /api/targets
+        const data: Target[] = await res.json();
+  
+        setTargets(data);
+        setLoading(false);
+  
+        // Extract unique pipeline statuses and ensure the type is string[]
+        const statuses: string[] = Array.from(new Set(data.map((target: Target) => target.pipelineStatus || 'Unknown')));
+        setPipelineStatuses(statuses);
+      } catch (error) {
+        console.error('Error fetching targets:', error);
+        setLoading(false);
+      }
+    }
+  
+    fetchTargets();
+  
+    // Sync dark mode toggle state
     const storedTheme = localStorage.getItem('theme');
     setIsDarkMode(storedTheme === 'dark');
   }, []);
@@ -29,6 +55,14 @@ export default function Dashboard() {
     setIsDarkMode(isDark);
   };
 
+  if (loading) {
+    return (
+      <div>
+        <Loading isDarkMode={isDarkMode} />
+      </div>
+    ); // Display loading while data is being fetched
+  }
+
   return (
     <div className={`p-4 md:p-8 min-h-screen transition-colors duration-300`}>
       {/* Fixed toggle button for dark mode */}
@@ -36,6 +70,7 @@ export default function Dashboard() {
       {/* Fixed home button at the bottom right */}
       <div className='fixed right-4 bottom-12 z-[100] grid gap-4'>
         <DisplayModeToggle onToggle={handleModeToggle} />
+
         <Link
           href='/'
           passHref
@@ -83,12 +118,11 @@ export default function Dashboard() {
               className={`bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-700 text-gray-700 dark:text-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 px-4 py-2`}
             >
               <option value=''>All</option>
-              <option value='Hot'>Hot</option>
-              <option value='Active'>Active</option>
-              <option value='Passed'>Passed</option>
-              <option value='Cold'>Cold</option>
-              <option value='Closed'>Closed</option>
-              <option value='Unknown'>Unknown</option>
+              {pipelineStatuses.map((status) => (
+                <option key={status} value={status}>
+                  {status}
+                </option>
+              ))}
             </select>
           </div>
         </div>
