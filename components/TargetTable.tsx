@@ -20,16 +20,26 @@ const TargetTable: React.FC<TargetTableProps> = ({ chartData, isDarkMode }) => {
 
   // Function to save the modified data
   const handleSave = async (id: number) => {
-    const targetToUpdate = editableData.find((target) => target.id === id);
+    const targetToUpdateIndex = editableData.findIndex((target) => target.id === id);
 
-    if (targetToUpdate) {
+    if (targetToUpdateIndex !== -1) {
+      const updatedTarget = {
+        ...editableData[targetToUpdateIndex],
+        lastUpdated: new Date().toISOString(), // Update the "lastUpdated" field to the current date
+      };
+
+      const updatedData = [...editableData];
+      updatedData[targetToUpdateIndex] = updatedTarget;
+
+      setEditableData(updatedData);
+
       try {
         const res = await fetch('/api/targets', {
           method: 'PUT',
           headers: {
             'Content-Type': 'application/json',
           },
-          body: JSON.stringify(editableData),
+          body: JSON.stringify(updatedData),
         });
 
         if (res.ok) {

@@ -22,4 +22,3 @@ export async function PUT(req: Request) {
     return NextResponse.json({ error: 'Error updating the file' }, { status: 500 });
   }
 }
-
