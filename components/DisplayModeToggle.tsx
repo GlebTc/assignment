@@ -1,5 +1,3 @@
-'use client';
-
 import { useEffect, useState } from 'react';
 
 export default function DisplayModeToggle({ onToggle }: { onToggle: (isDark: boolean) => void }) {
@@ -16,19 +14,19 @@ export default function DisplayModeToggle({ onToggle }: { onToggle: (isDark: boo
       document.documentElement.classList.remove('dark');
       onToggle(false); // Update the parent with light mode
     }
-  }, []);
+  }, [onToggle]); // Add onToggle as a dependency
 
   const toggleDarkMode = () => {
     if (darkMode) {
       document.documentElement.classList.remove('dark');
       localStorage.setItem('theme', 'light');
       setDarkMode(false);
-      onToggle(false); // Notify parent about light mode
+      onToggle(false);
     } else {
       document.documentElement.classList.add('dark');
       localStorage.setItem('theme', 'dark');
       setDarkMode(true);
-      onToggle(true); // Notify parent about dark mode
+      onToggle(true);
     }
   };
 
