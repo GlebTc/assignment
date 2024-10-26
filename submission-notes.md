@@ -1,9 +1,15 @@
-# Add any notes about the task here
+# Submission Notes
 
+## BarChart Component
+- Used `react-chartjs-2` to create a visual summary of targets by pipeline status.
 
-1. I used react-chartjs-2 for the BarChart component
-2. Created a table with editable rows (The edits are sent via a PUT API request which updates the targets.json file)
-3. The data is obtained and filtered in the Dashboard component 
-4. Minor additions:
-    a. Simulated Loading SCreen
-    b. Light/Dark Mode
+## Target Table
+- Built an editable table where users can modify target data directly.
+- Changes are saved via a PUT request to update `targets.json` (note: this works locally but would need further setup for production).
+
+## Dashboard Data Handling
+- Fetches and filters data, applying the selected pipeline status filter to both the bar chart and table.
+
+## Minor Features
+- Added a loading screen simulation for user experience.
+- Implemented light/dark mode toggling.
