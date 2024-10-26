@@ -48,38 +48,38 @@ const BarChart = ({ chartData, isDarkMode }: { chartData: Target[], isDarkMode: 
       legend: {
         position: 'top' as const,
         labels: {
-          color: isDarkMode ? '#f5f5f5' : '#171717', // Adjust text color based on theme
+          color: isDarkMode ? '#f5f5f5' : '#171717',
         },
       },
       title: {
         display: true,
         text: 'Number of Acquisition Targets by Pipeline Status',
-        color: isDarkMode ? '#f5f5f5' : '#171717', // Adjust title color based on theme
+        color: isDarkMode ? '#f5f5f5' : '#171717',
         font: {
           size: 18,
         },
       },
       tooltip: {
         bodyColor: isDarkMode ? '#f5f5f5' : '#171717',
-        backgroundColor: isDarkMode ? '#333333' : '#ffffff', // Adjust tooltip background
+        backgroundColor: isDarkMode ? '#333333' : '#ffffff', 
         titleColor: isDarkMode ? '#f5f5f5' : '#171717',
       },
     },
     scales: {
       x: {
         ticks: {
-          color: isDarkMode ? '#f5f5f5' : '#171717', // X-axis text color
+          color: isDarkMode ? '#f5f5f5' : '#171717', 
         },
         grid: {
-          display: false, // Hide grid lines
+          display: false,
         },
       },
       y: {
         ticks: {
-          color: isDarkMode ? '#f5f5f5' : '#171717', // Y-axis text color
+          color: isDarkMode ? '#f5f5f5' : '#171717',
         },
         grid: {
-          display: false, // Hide grid lines
+          display: false,
         },
       },
     },

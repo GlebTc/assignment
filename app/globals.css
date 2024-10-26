@@ -2,24 +2,37 @@
 @tailwind components;
 @tailwind utilities;
 
-/* Light mode variables */
 :root {
   --background: #ffffff;
   --foreground: #171717;
-  --text-color: #333333; /* Slightly darker text color for readability in light mode */
+  --text-color: #333333;
 }
 
-/* Dark mode variables applied when the 'dark' class is present */
 .dark {
   --background: #0a0a0a;
   --foreground: #ededed;
-  --text-color: #d1d5db; /* Slightly lighter text color for readability in dark mode */
+  --text-color: #d1d5db; 
 }
 
-/* Apply text color and background dynamically */
 body {
-  color: var(--text-color); /* Dynamic text color for readability */
-  background: var(--background); /* Dynamic background color */
+  color: var(--text-color); 
+  background: var(--background);
   font-family: Arial, Helvetica, sans-serif;
-  transition: background 0.3s ease, color 0.3s ease; /* Smooth transitions between modes */
+  transition: background 0.3s ease, color 0.3s ease; 
+}
+
+h1 {
+  @apply text-3xl md:text-4xl font-bold
+}
+
+h2 {
+  @apply text-2xl md:text-3xl font-bold
+}
+
+p {
+  @apply text-base md:text-lg
+}
+
+.btn {
+  @apply flex items-center justify-center w-12 h-12 bg-gray-700 dark:bg-gray-400 rounded-full shadow-md focus:outline-none hover:bg-gray-400 dark:hover:bg-gray-600 transition-colors
 }

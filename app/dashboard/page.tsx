@@ -8,42 +8,43 @@ import DisplayModeToggle from '@/components/DisplayModeToggle';
 import Loading from '@/components/Loading';
 
 export default function Dashboard() {
+  const componentName = 'DASHBOARD';
   const [filterStatus, setFilterStatus] = useState<string | null>(null);
   const [isDarkMode, setIsDarkMode] = useState<boolean>(false);
-  const [targets, setTargets] = useState<Target[]>([]); // Dynamic data state
-  const [loading, setLoading] = useState<boolean>(true); // Loading state
-  const [pipelineStatuses, setPipelineStatuses] = useState<string[]>([]); 
+  const [targets, setTargets] = useState<Target[]>([]);
+  const [loading, setLoading] = useState<boolean>(true);
+  const [pipelineStatuses, setPipelineStatuses] = useState<string[]>([]);
 
-  // Fetch data from the API with an artificial delay
   useEffect(() => {
     async function fetchTargets() {
       try {
-        // Introduce an artificial delay of 1 second
+        // Added artificial delay of 1 second to stimulate laoding
         await new Promise((resolve) => setTimeout(resolve, 1000));
-  
-        const res = await fetch('/api/targets'); // Make sure your API route is set up as /api/targets
+
+        const res = await fetch('/api/targets');
         const data: Target[] = await res.json();
-  
+
         setTargets(data);
         setLoading(false);
-  
-        // Extract unique pipeline statuses and ensure the type is string[]
-        const statuses: string[] = Array.from(new Set(data.map((target: Target) => target.pipelineStatus || 'Unknown')));
+
+        const statuses: string[] = Array.from(
+          new Set(
+            data.map((target: Target) => target.pipelineStatus || 'Unknown')
+          )
+        );
         setPipelineStatuses(statuses);
       } catch (error) {
         console.error('Error fetching targets:', error);
         setLoading(false);
       }
     }
-  
+
     fetchTargets();
-  
-    // Sync dark mode toggle state
     const storedTheme = localStorage.getItem('theme');
     setIsDarkMode(storedTheme === 'dark');
   }, []);
 
-  // Filter chartData based on the selected pipelineStatus
+  // Filter data by pipeline status
   const filteredData = filterStatus
     ? targets.filter((target: Target) => {
         const status = target.pipelineStatus || 'Unknown';
@@ -60,56 +61,33 @@ export default function Dashboard() {
       <div>
         <Loading isDarkMode={isDarkMode} />
       </div>
-    ); // Display loading while data is being fetched
+    );
   }
 
   return (
-    <div className={`p-4 md:p-8 min-h-screen transition-colors duration-300`}>
-      {/* Fixed toggle button for dark mode */}
-
-      {/* Fixed home button at the bottom right */}
+    <div
+      className={`${componentName}_MAIN_CONTAINER p-4 md:p-8 min-h-screen transition-colors duration-300`}
+    >
       <div className='fixed right-4 bottom-12 z-[100] grid gap-4'>
         <DisplayModeToggle onToggle={handleModeToggle} />
-
         <Link
           href='/'
           passHref
-          className='flex items-center justify-center w-12 h-12 bg-gray-300 dark:bg-gray-700 rounded-full shadow-md focus:outline-none hover:bg-gray-400 dark:hover:bg-gray-600 transition-colors'
+          className='btn'
           aria-label='Go Home'
         >
           🏠
         </Link>
       </div>
-
-      {/* Main content section */}
       <div className='max-w-4xl mx-auto text-center space-y-6'>
         <div className='mb-8'>
-          <h1
-            className={`text-3xl md:text-4xl font-bold ${
-              isDarkMode ? 'text-white' : 'text-gray-900'
-            }`}
-          >
-            Target Management Dashboard
-          </h1>
-          <p
-            className={`text-lg ${
-              isDarkMode ? 'text-gray-300' : 'text-gray-700'
-            }`}
-          >
-            Monitor and analyze acquisition targets easily
-          </p>
+          <h1>Target Management Dashboard</h1>
+          <h2>Monitor and analyze acquisition targets easily</h2>
         </div>
-
-        {/* Filter and additional controls */}
         <div className='flex justify-center space-x-6'>
           <div className='flex flex-col md:flex-row gap-2 items-center'>
-            <label
-              htmlFor='filter'
-              className={`text-sm md:text-lg font-medium ${
-                isDarkMode ? 'text-gray-100' : 'text-gray-900'
-              }`}
-            >
-              Filter by Status:
+            <label htmlFor='filter'>
+              <p>Filter by Status:</p>
             </label>
             <select
               id='filter'
@@ -119,7 +97,10 @@ export default function Dashboard() {
             >
               <option value=''>All</option>
               {pipelineStatuses.map((status) => (
-                <option key={status} value={status}>
+                <option
+                  key={status}
+                  value={status}
+                >
                   {status}
                 </option>
               ))}
@@ -127,7 +108,7 @@ export default function Dashboard() {
           </div>
         </div>
 
-        {/* Bar Chart */}
+        {/* Bar Chart Component*/}
         <div className='mt-8'>
           <BarChart
             chartData={filteredData}
@@ -135,7 +116,7 @@ export default function Dashboard() {
           />
         </div>
 
-        {/* Target Table */}
+        {/* Target Table Component*/}
         <div className='mt-8'>
           <TargetTable
             chartData={filteredData}
