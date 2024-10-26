@@ -7,15 +7,17 @@ interface TargetTableProps {
 }
 
 const TargetTable: React.FC<TargetTableProps> = ({ chartData, isDarkMode }) => {
-  const [editableData, setEditableData] = useState<Target[]>(chartData);
+  const [editableData, setEditableData] = useState<Target[]>([]);
   const [editRowId, setEditRowId] = useState<number | null>(null);
+  const [previousData, setPreviousData] = useState<Target | null>(null);
 
-  // Sync the local editableData with the incoming chartData prop
   useEffect(() => {
-    setEditableData(chartData);
-  }, [chartData]); // This will update the table whenever filtered data changes
+    const sortedData = [...chartData].sort(
+      (a, b) => new Date(b.lastUpdated).getTime() - new Date(a.lastUpdated).getTime()
+    );
+    setEditableData(sortedData);
+  }, [chartData]);
 
-  // Handle input changes for the editable data
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>, id: number, field: keyof Target) => {
     const newData = editableData.map((target) =>
       target.id === id ? { ...target, [field]: e.target.value } : target
@@ -23,20 +25,22 @@ const TargetTable: React.FC<TargetTableProps> = ({ chartData, isDarkMode }) => {
     setEditableData(newData);
   };
 
-  // Function to save the modified data
   const handleSave = async (id: number) => {
     const targetToUpdateIndex = editableData.findIndex((target) => target.id === id);
 
     if (targetToUpdateIndex !== -1) {
       const updatedTarget = {
         ...editableData[targetToUpdateIndex],
-        lastUpdated: new Date().toISOString(), // Update the "lastUpdated" field to the current date
+        lastUpdated: new Date().toISOString(),
       };
 
-      const updatedData = [...editableData];
-      updatedData[targetToUpdateIndex] = updatedTarget;
+      const updatedData = [
+        updatedTarget,
+        ...editableData.filter((_, index) => index !== targetToUpdateIndex),
+      ].sort((a, b) => new Date(b.lastUpdated).getTime() - new Date(a.lastUpdated).getTime());
 
       setEditableData(updatedData);
+      setEditRowId(null);
 
       try {
         const res = await fetch('/api/targets', {
@@ -47,16 +51,28 @@ const TargetTable: React.FC<TargetTableProps> = ({ chartData, isDarkMode }) => {
           body: JSON.stringify(updatedData),
         });
 
-        if (res.ok) {
-          console.log('Target updated successfully');
-          setEditRowId(null); // Exit editing mode
-        } else {
+        if (!res.ok) {
           console.error('Failed to update target');
         }
       } catch (error) {
         console.error('Error saving the target:', error);
       }
     }
+  };
+
+  const handleCancel = () => {
+    if (previousData) {
+      setEditableData((data) =>
+        data.map((target) => (target.id === previousData.id ? previousData : target))
+      );
+    }
+    setEditRowId(null);
+    setPreviousData(null);
+  };
+
+  const startEditing = (target: Target) => {
+    setPreviousData({ ...target });
+    setEditRowId(target.id);
   };
 
   return (
@@ -68,38 +84,26 @@ const TargetTable: React.FC<TargetTableProps> = ({ chartData, isDarkMode }) => {
       <table className="min-w-full border-collapse">
         <thead>
           <tr>
-            <th className={`py-2 px-4 border-b ${isDarkMode ? 'border-gray-700 text-gray-100' : 'border-gray-300 text-gray-900'}`}>
-              Name
-            </th>
-            <th className={`py-2 px-4 border-b ${isDarkMode ? 'border-gray-700 text-gray-100' : 'border-gray-300 text-gray-900'}`}>
-              Description
-            </th>
-            <th className={`py-2 px-4 border-b ${isDarkMode ? 'border-gray-700 text-gray-100' : 'border-gray-300 text-gray-900'}`}>
-              Markets
-            </th>
-            <th className={`py-2 px-4 border-b ${isDarkMode ? 'border-gray-700 text-gray-100' : 'border-gray-300 text-gray-900'}`}>
-              Pipeline Status
-            </th>
-            <th className={`py-2 px-4 border-b ${isDarkMode ? 'border-gray-700 text-gray-100' : 'border-gray-300 text-gray-900'}`}>
-              Last Updated
-            </th>
-            <th className={`py-2 px-4 border-b ${isDarkMode ? 'border-gray-700 text-gray-100' : 'border-gray-300 text-gray-900'}`}>
-              Actions
-            </th>
+            <th className="py-2 px-4 border-b border-[var(--foreground)]">Name</th>
+            <th className="py-2 px-4 border-b border-[var(--foreground)]">Description</th>
+            <th className="py-2 px-4 border-b border-[var(--foreground)]">Markets</th>
+            <th className="py-2 px-4 border-b border-[var(--foreground)]">Pipeline Status</th>
+            <th className="py-2 px-4 border-b border-[var(--foreground)]">Last Updated</th>
+            <th className="py-2 px-4 border-b border-[var(--foreground)]">Actions</th>
           </tr>
         </thead>
         <tbody>
           {editableData.map((target) => (
-            <tr key={target.id} className={`border-b ${isDarkMode ? 'border-gray-700 text-gray-100' : 'border-gray-300 text-gray-900'}`}>
+            <tr key={target.id} className="border-b border-[var(--foreground)]">
               <td className="py-2 px-4">
                 {editRowId === target.id ? (
                   <input
                     type="text"
                     value={target.name}
                     onChange={(e) => handleInputChange(e, target.id, 'name')}
-                    className={`w-full border p-1 rounded ${
-                      isDarkMode ? 'bg-gray-800 text-white border-gray-600' : 'bg-white text-black border-gray-300'
-                    }`}
+                    size={target.name.length || 1} // Adjust input size to text length
+                    className="w-full border p-1 rounded"
+                    style={{ minWidth: '100%' }} // Ensure input takes full cell width
                   />
                 ) : (
                   target.name
@@ -111,9 +115,9 @@ const TargetTable: React.FC<TargetTableProps> = ({ chartData, isDarkMode }) => {
                     type="text"
                     value={target.description}
                     onChange={(e) => handleInputChange(e, target.id, 'description')}
-                    className={`w-full border p-1 rounded ${
-                      isDarkMode ? 'bg-gray-800 text-white border-gray-600' : 'bg-white text-black border-gray-300'
-                    }`}
+                    size={target.description.length || 1}
+                    className="w-full border p-1 rounded"
+                    style={{ minWidth: '100%' }}
                   />
                 ) : (
                   target.description
@@ -125,9 +129,9 @@ const TargetTable: React.FC<TargetTableProps> = ({ chartData, isDarkMode }) => {
                     type="text"
                     value={target.markets.join(', ')}
                     onChange={(e) => handleInputChange(e, target.id, 'markets')}
-                    className={`w-full border p-1 rounded ${
-                      isDarkMode ? 'bg-gray-800 text-white border-gray-600' : 'bg-white text-black border-gray-300'
-                    }`}
+                    size={target.markets.join(', ').length || 1}
+                    className="w-full border p-1 rounded"
+                    style={{ minWidth: '100%' }}
                   />
                 ) : (
                   target.markets.join(', ')
@@ -139,33 +143,43 @@ const TargetTable: React.FC<TargetTableProps> = ({ chartData, isDarkMode }) => {
                     type="text"
                     value={target.pipelineStatus || 'Unknown'}
                     onChange={(e) => handleInputChange(e, target.id, 'pipelineStatus')}
-                    className={`w-full border p-1 rounded ${
-                      isDarkMode ? 'bg-gray-800 text-white border-gray-600' : 'bg-white text-black border-gray-300'
-                    }`}
+                    size={(target.pipelineStatus || 'Unknown').length || 1}
+                    className="w-full border p-1 rounded"
+                    style={{ minWidth: '100%' }}
                   />
                 ) : (
                   target.pipelineStatus || 'Unknown'
                 )}
               </td>
               <td className="py-2 px-4">
-                {new Date(target.lastUpdated).toLocaleDateString('en-GB')}
+                {new Date(target.lastUpdated).toLocaleDateString('en-US')}
               </td>
               <td className="py-2 px-4">
-                {editRowId === target.id ? (
-                  <button
-                    onClick={() => handleSave(target.id)}
-                    className="bg-blue-500 text-white px-4 py-1 rounded"
-                  >
-                    Save
-                  </button>
-                ) : (
-                  <button
-                    onClick={() => setEditRowId(target.id)}
-                    className="bg-yellow-500 text-white px-4 py-1 rounded"
-                  >
-                    Edit
-                  </button>
-                )}
+                <div className="flex space-x-2">
+                  {editRowId === target.id ? (
+                    <>
+                      <button
+                        onClick={() => handleSave(target.id)}
+                        className="bg-blue-500 text-white px-2 py-1 rounded text-sm"
+                      >
+                        Save
+                      </button>
+                      <button
+                        onClick={handleCancel}
+                        className="bg-gray-500 text-white px-2 py-1 rounded text-sm"
+                      >
+                        Cancel
+                      </button>
+                    </>
+                  ) : (
+                    <button
+                      onClick={() => startEditing(target)}
+                      className="bg-yellow-500 text-white px-2 py-1 rounded text-sm"
+                    >
+                      Edit
+                    </button>
+                  )}
+                </div>
               </td>
             </tr>
           ))}
